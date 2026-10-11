@@ -17,6 +17,8 @@ Discordで `/exchange <交換ワード>` を送ると「断片」が返るBOT。
 
 ## セットアップ
 
+初心者向けの詳しい手順は **[docs/SETUP.md](docs/SETUP.md)** を参照してください。以下は要約です。
+
 ### 1. Discord BOTを作る
 1. https://discord.com/developers/applications で **New Application**
 2. **Bot** タブ → **Reset Token** でトークンを控える(他人に見せない)。特権インテントは不要。
