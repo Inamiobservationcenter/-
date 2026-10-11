@@ -1,0 +1,25 @@
+services:
+  bot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      WEB_PORT: "8080"
+    volumes:
+      - ./data:/data
+    expose:
+      - "8080"
+  caddy:   # HTTPS終端。Let's Encrypt証明書を自動取得
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?.env に DOMAIN=admin.example.com のように設定してください}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on: [bot]
+volumes:
+  caddy_data:
