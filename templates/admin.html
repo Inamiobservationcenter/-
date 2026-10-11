@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>交換BOT 管理</title>
+<style>
+body{font-family:sans-serif;max-width:900px;margin:1rem auto;padding:0 1rem}
+table{border-collapse:collapse;width:100%}td,th{border:1px solid #aaa;padding:4px;text-align:left}
+input[type=text]{width:100%;box-sizing:border-box}textarea{width:100%;height:8em}
+.on{color:#080}.off{color:#b00}.msg{background:#ffd;padding:.5rem}
+</style></head><body>
+<h1>交換BOT 管理</h1>
+{% if msg %}<p class="msg">{{ msg }}</p>{% endif %}
+
+<h2>交換機能: <span class="{{ 'on' if enabled else 'off' }}">{{ '有効' if enabled else '無効' }}</span></h2>
+<form method="post" action="/toggle">
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="enabled" value="{{ '0' if enabled else '1' }}">
+<button>{{ '無効にする' if enabled else '有効にする (最終問題開始時)' }}</button>
+</form>
+<p>無効中は <code>/exchange</code> コマンド自体がDiscordに表示されません。</p>
+
+<h2>交換ワードと断片 ({{ words|length }}件)</h2>
+<table><tr><th>交換ワード</th><th>断片</th><th>メモ</th><th></th></tr>
+{% for w in words %}
+<tr><form method="post" action="/word"><input type="hidden" name="csrf" value="{{ csrf }}">
+<td><input type="hidden" name="word" value="{{ w.word }}">{{ w.word }}</td>
+<td><input type="text" name="fragment" value="{{ w.fragment }}"></td>
+<td><input type="text" name="label" value="{{ w.label }}"></td>
+<td><button>更新</button></form>
+<form method="post" action="/word/delete" style="display:inline" onsubmit="return confirm('削除しますか?')">
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="word" value="{{ w.word }}"><button>削除</button></form></td></tr>
+{% endfor %}
+<tr><form method="post" action="/word"><input type="hidden" name="csrf" value="{{ csrf }}">
+<td><input type="text" name="word" placeholder="新しい交換ワード"></td>
+<td><input type="text" name="fragment" placeholder="断片"></td>
+<td><input type="text" name="label" placeholder="メモ(任意)"></td><td><button>追加</button></form></td></tr>
+</table>
+
+<h3>一括取り込み</h3>
+<form method="post" action="/bulk"><input type="hidden" name="csrf" value="{{ csrf }}">
+<textarea name="text" placeholder="1行に1件: 交換ワード,断片 (カンマまたはタブ区切り)"></textarea>
+<button>取り込む(既存ワードは上書き)</button></form>
+
+<h2>交換済みユーザー ({{ exchanges|length }}人)</h2>
+<table><tr><th>ユーザー</th><th>送ったワード</th><th>断片</th><th>日時(UTC)</th><th></th></tr>
+{% for e in exchanges %}
+<tr><td>{{ e.user_name }} ({{ e.user_id }})</td><td>{{ e.word }}</td><td>{{ e.fragment }}</td>
+<td>{{ e.at | int | string }}</td>
+<td><form method="post" action="/reset" onsubmit="return confirm('リセットしますか?')">
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="user_id" value="{{ e.user_id }}"><button>リセット</button></form></td></tr>
+{% endfor %}</table>
+<form method="post" action="/reset" onsubmit="return confirm('全員の交換履歴を消します。よろしいですか?')">
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="user_id" value="*"><button>全員リセット</button></form>
+</body></html>
